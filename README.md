@@ -1,7 +1,7 @@
-🍅 Minimalist Pomodoro Timer
+##🍅 Minimalist Pomodoro Timer
 A sleek, animation-rich Pomodoro timer built with pure HTML, CSS, and JavaScript. This project was created as part of my experiments with Claude Artifacts and web development, focusing on smooth user interactions and clean design.
-Show Image
-✨ Features
+
+##✨ Features
 
 Clean, Minimalist Interface: Simple and distraction-free design
 Smooth Animations: Circular progress indicator and pulsing time display
@@ -15,7 +15,7 @@ Long Break (15 minutes)
 Audio Notifications: Gentle sound cue when timer completes
 Responsive Design: Works seamlessly on both desktop and mobile devices
 
-🛠️ Technical Details
+##🛠️ Technical Details
 This project demonstrates several modern web development techniques:
 
 Pure HTML/CSS/JS implementation without external dependencies
@@ -24,7 +24,7 @@ SVG-like circular progress using CSS clip-path
 Web Audio API for programmatic sound generation
 Object-oriented JavaScript for timer management
 
-🚀 Getting Started
+##🚀 Getting Started
 
 Clone the repository:
 
@@ -33,13 +33,14 @@ bashCopygit clone https://github.com/yourusername/pomodoro-timer.git
 Open index.html in your web browser
 
 That's it! No build process or dependencies required.
-💡 Usage
+
+##💡 Usage
 
 Select your timer mode:
 
-Pomodoro (25 min) for focused work sessions
-Short Break (5 min) for quick breathers
-Long Break (15 min) for extended rest
+-Pomodoro (25 min) for focused work sessions
+-Short Break (5 min) for quick breathers
+-Long Break (15 min) for extended rest
 
 
 Click "Start" to begin the timer
