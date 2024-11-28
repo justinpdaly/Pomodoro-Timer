@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pomodoro Timer</title>
+    <style>
+        :root {
+            --primary-color: #ff6b6b;
+            --secondary-color: #4ecdc4;
+            --background-color: #f7f7f7;
+            --text-color: #2d3436;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
+            background-color: var(--background-color);
+            color: var(--text-color);
+        }
+
+        .container {
+            text-align: center;
+            padding: 2rem;
+            border-radius: 1rem;
+            background: white;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            max-width: 400px;
+            width: 90%;
+        }
+
+        .timer {
+            position: relative;
+            width: 200px;
+            height: 200px;
+            margin: 2rem auto;
+        }
+
+        .timer-circle {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            border: 8px solid #eee;
+            position: relative;
+        }
+
+        .progress {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            position: absolute;
+            top: 0;
+            left: 0;
+            clip-path: circle(50% at 50% 50%);
+        }
+
+        .progress::before {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border: 8px solid var(--primary-color);
+            border-radius: 50%;
+            box-sizing: border-box;
+            top: -8px;
+            left: -8px;
+            transition: clip-path 1s linear;
+        }
+
+        .time-display {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 2.5rem;
+            font-weight: bold;
+        }
+
+        .controls {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            margin-top: 2rem;
+        }
+
+        button {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 0.5rem;
+            background-color: var(--primary-color);
+            color: white;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: transform 0.2s, background-color 0.2s;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            background-color: #ff5252;
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        button.reset {
+            background-color: var(--secondary-color);
+        }
+
+        button.reset:hover {
+            background-color: #3dbeb6;
+        }
+
+        .mode-switch {
+            margin-top: 1rem;
+        }
+
+        .mode-switch button {
+            padding: 0.5rem 1rem;
+            margin: 0 0.25rem;
+            background-color: #eee;
+            color: var(--text-color);
+        }
+
+        .mode-switch button.active {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        @keyframes pulse {
+            0% { transform: translate(-50%, -50%) scale(1); }
+            50% { transform: translate(-50%, -50%) scale(1.05); }
+            100% { transform: translate(-50%, -50%) scale(1); }
+        }
+
+        .timer.running .time-display {
+            animation: pulse 2s infinite;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Pomodoro Timer</h1>
+        <div class="timer">
+            <div class="timer-circle">
+                <div class="progress"></div>
+            </div>
+            <div class="time-display">25:00</div>
+        </div>
+        <div class="mode-switch">
+            <button class="active" data-time="1500">Pomodoro</button>
+            <button data-time="300">Short Break</button>
+            <button data-time="900">Long Break</button>
+        </div>
+        <div class="controls">
+            <button class="start">Start</button>
+            <button class="reset">Reset</button>
+        </div>
+    </div>
+
+    <script>
+        class PomodoroTimer {
+            constructor() {
+                this.timeLeft = 1500;
+                this.totalTime = 1500;
+                this.isRunning = false;
+                this.interval = null;
+
+                this.timerDisplay = document.querySelector('.time-display');
+                this.timerElement = document.querySelector('.timer');
+                this.progressElement = document.querySelector('.progress');
+                this.startButton = document.querySelector('.start');
+                this.resetButton = document.querySelector('.reset');
+                this.modeButtons = document.querySelectorAll('.mode-switch button');
+
+                this.initializeEventListeners();
+                this.updateDisplay();
+            }
+
+            initializeEventListeners() {
+                this.startButton.addEventListener('click', () => this.toggleTimer());
+                this.resetButton.addEventListener('click', () => this.reset());
+                
+                this.modeButtons.forEach(button => {
+                    button.addEventListener('click', (e) => {
+                        this.modeButtons.forEach(btn => btn.classList.remove('active'));
+                        e.target.classList.add('active');
+                        this.setTime(parseInt(e.target.dataset.time));
+                    });
+                });
+            }
+
+            toggleTimer() {
+                if (this.isRunning) {
+                    this.pause();
+                } else {
+                    this.start();
+                }
+            }
+
+            start() {
+                if (!this.isRunning) {
+                    this.isRunning = true;
+                    this.startButton.textContent = 'Pause';
+                    this.timerElement.classList.add('running');
+                    
+                    this.interval = setInterval(() => {
+                        this.timeLeft--;
+                        this.updateDisplay();
+                        
+                        if (this.timeLeft <= 0) {
+                            this.complete();
+                        }
+                    }, 1000);
+                }
+            }
+
+            pause() {
+                if (this.isRunning) {
+                    this.isRunning = false;
+                    this.startButton.textContent = 'Start';
+                    this.timerElement.classList.remove('running');
+                    clearInterval(this.interval);
+                }
+            }
+
+            reset() {
+                this.pause();
+                this.timeLeft = this.totalTime;
+                this.updateDisplay();
+            }
+
+            complete() {
+                this.pause();
+                this.timeLeft = 0;
+                this.updateDisplay();
+                // Play a simple beep notification
+                const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                const oscillator = ctx.createOscillator();
+                const gainNode = ctx.createGain();
+                oscillator.connect(gainNode);
+                gainNode.connect(ctx.destination);
+                oscillator.type = 'sine';
+                oscillator.frequency.value = 800;
+                gainNode.gain.value = 0.1;
+                oscillator.start();
+                setTimeout(() => oscillator.stop(), 200);
+            }
+
+            updateDisplay() {
+                const minutes = Math.floor(this.timeLeft / 60);
+                const seconds = this.timeLeft % 60;
+                this.timerDisplay.textContent = 
+                    `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+                
+                if (this.timeLeft === 0) {
+                    this.progressElement.style.clipPath = 'circle(0% at 50% 50%)';
+                } else {
+                    const progress = (this.timeLeft / this.totalTime) * 100;
+                    this.progressElement.style.clipPath = `circle(${progress}% at 50% 50%)`;
+                }
+            }
+
+            setTime(seconds) {
+                this.pause();
+                this.totalTime = seconds;
+                this.timeLeft = seconds;
+                this.updateDisplay();
+            }
+        }
+
+        // Initialize the timer
+        const timer = new PomodoroTimer();
+    </script>
+</body>
+</html>
